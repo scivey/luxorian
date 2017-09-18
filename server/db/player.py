@@ -10,6 +10,9 @@ class Player(Document):
     blizz_id = IntField(required=True)
     battletag = StringField(required=True, max_length=12)
 
+    def __repr__(self):
+        return '{} ({})'.format(self.battletag, self.blizz_id)
+
     def get_player_details(self, game_mode=None):
         if game_mode:
             player_details = [detail for detail in PlayerModeDetails.objects(player=self) if detail.mode == game_mode]

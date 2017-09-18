@@ -59,10 +59,10 @@ class ReplayDatabase(Database):
                 details.save()
             logger.info('Found and added Player {} ({})'.format(player.battletag, player.blizz_id))
 
-        self.update_player_details(player, replay, player_data['hero'], player_data['hero_level'])  # TODO: add talents
+        self.update_player_details(player, replay, player_data['hero'], player_data['hero_level'], player_data['winner'])  # TODO: add talents
         return player
 
-    def update_player_details(self, player, replay, hero_name, hero_level):  # TODO: add talents
+    def update_player_details(self, player, replay, hero_name, hero_level, is_winner):  # TODO: add talents
         player_details = player.get_player_details(replay.mode)
         hero = [hero for hero in player_details.get_heroes() if hero.hero.name == hero_name]
         if len(hero) == 1:
@@ -75,7 +75,8 @@ class ReplayDatabase(Database):
 
         hero.level = hero_level
         hero.games_played += 1
-        hero.games_won += 1
+        if is_winner:
+            hero.games_won += 1
         hero.save()
 
         player_replay = PlayerReplay(player=player,

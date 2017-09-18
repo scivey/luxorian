@@ -67,3 +67,7 @@ class PlayerHero(Document):
     level = IntField(required=True, default=1)
     games_played = IntField(required=True, default=0)
     games_won = IntField(required=True, default=0)
+
+    def __repr__(self):
+        data_dict = {'level': self.level, 'games_played': self.games_played, 'games_won': self.games_won}
+        return '{}: {}'.format(self.hero.name, data_dict)
