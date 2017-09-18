@@ -1,13 +1,15 @@
 from mongoengine.document import Document
-from mongoengine.fields import BooleanField, DateTimeField, IntField, ReferenceField, StringField
+from mongoengine.fields import BooleanField, DateTimeField, IntField, ReferenceField, StringField, DictField
 
 from server.db.player import Player
 
 
 class Hero(Document):
     name = StringField(required=True)
+    description = StringField()
     release_date = DateTimeField()
     blizz_role = StringField()
+    bans = DictField()
     can_tank = BooleanField(default=False)
     can_solo_heal = BooleanField(default=False)
     can_heal_ally = BooleanField(default=False)
@@ -58,6 +60,47 @@ class Hero(Document):
     has_crits_self = BooleanField(default=False)
     has_ability_dpsup_ally = BooleanField(default=False)
     has_ability_dpsup_self = BooleanField(default=False)
+
+    def __repr__(self):
+        return '{}'.format(self.name)
+
+    def get_hero_popularity(self):
+        popularity = {'players': 0, 'total_level': 0}
+        for player_hero in PlayerHero.objects(hero=self):
+            if player_hero.mode not in popularity:
+                popularity[player_hero.mode] = {
+                    'wins': 0,
+                    'losses': 0,
+                    'bans': self.bans[player_hero.mode]
+                }
+            popularity[player_hero.mode]['losses'] += player_hero.games_played - player_hero.games_won
+            popularity[player_hero.mode]['wins'] += player_hero.games_won
+            popularity['players'] += 1
+            popularity['total_level'] += player_hero.level
+        return popularity
+
+    def get_hero_popularity_for_date_range(self, start_date, end_date=None, min_level=1, mode=None):
+        from server.db.replay import Replay
+        popularity = {}
+        replays_by_result = Replay.get_replays_by_result_for_hero_mode_and_date_range(self, start_date, end_date, mode,
+                                                                                      min_level)
+        for result, replays in replays_by_result.items():
+            for replay in replays:
+                if replay.mode not in popularity:
+                    popularity[replay.mode] = {
+                        'wins': 0,
+                        'losses': 0,
+                        'bans': 0
+                    }
+                popularity[replay.mode][result] += 1
+        return popularity
+
+    def get_talents_details(self):
+        return {}
+
+    def get_hero_details(self):
+        hero_details = {'talents': self.get_talents_details(), 'popularity': self.get_hero_popularity()}
+        return hero_details
 
 
 class PlayerHero(Document):

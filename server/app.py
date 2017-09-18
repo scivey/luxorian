@@ -3,9 +3,10 @@ from flask import Flask
 from server.db.database import ReplayDatabase
 
 
-def register_blueprints(app, prefix='/'):
-    from server.api import player
-    app.register_blueprint(player.api, url_prefix=prefix)
+def register_blueprints(registered_app, prefix='/'):
+    from server.api import hero, player
+    registered_app.register_blueprint(player.api, url_prefix=prefix)
+    registered_app.register_blueprint(hero.api, url_prefix=prefix)
 
 
 def prepare_app():
