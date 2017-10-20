@@ -20,6 +20,12 @@ class Replay(Document):
     url = URLField(required=True)
     version = StringField(required=True, max_length=25)
     bans = ListField(ReferenceField(Hero))
+    meta = {
+        'indexes': [
+            '-date',
+            ('-date', 'mode')
+        ]
+    }
 
     @classmethod
     def get_replays_by_result_for_hero_mode_and_date_range(cls, hero, start_date, end_date=None, mode=None,
@@ -73,3 +79,10 @@ class PlayerReplay(Document):
     self_healing = IntField()
     damage_taken = IntField()
     experience_earned = IntField()
+    meta = {
+        'indexes': [
+            'player_hero',
+            'replay',
+            ('player_hero', 'replay')
+        ]
+    }
